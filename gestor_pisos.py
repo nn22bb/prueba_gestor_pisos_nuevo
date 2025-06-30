@@ -1,140 +1,89 @@
 import json
-import os
+from typing import List
 
-ARCHIVO_DATOS = "pisos.json"
+# 🧍 Clase Persona
+class Residente:
+    def __init__(self, nombre: str, profesion: str):
+        self.nombre = nombre
+        self.profesion = profesion
 
-# Cargar datos desde archivo
-def cargar_datos():
-    if not os.path.exists(ARCHIVO_DATOS):
-        return {}
-    with open(ARCHIVO_DATOS, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-# Guardar datos a archivo
-def guardar_datos(datos):
-    with open(ARCHIVO_DATOS, "w", encoding="utf-8") as f:
-        json.dump(datos, f, indent=4, ensure_ascii=False)
-
-# Ver todos los pisos
-def ver_pisos(datos):
-    if not datos:
-        print("No hay pisos registrados aún.")
-        return
-    for id_piso, piso in datos.items():
-        print(f"Piso {id_piso}: {piso['ciudad']}, {piso['calle']} {piso['numero']}")
-        for inq in piso["inquilinos"]:
-            print(f"   → {inq['nombre']} ({inq['trabajo']})")
-        print()
-
-# Ver inquilinos de un piso
-def ver_inquilinos(datos, id_piso):
-    piso = datos.get(id_piso)
-    if piso:
-        if piso["inquilinos"]:
-            print(f"Inquilinos del piso {id_piso}:")
-            for inq in piso["inquilinos"]:
-                print(f" - {inq['nombre']} ({inq['trabajo']})")
-        else:
-            print("Este piso no tiene inquilinos.")
-    else:
-        print("Piso no encontrado.")
-
-# Añadir nuevo inquilino
-def añadir_inquilino(datos, id_piso, nombre, trabajo):
-    if id_piso in datos:
-        datos[id_piso]["inquilinos"].append({"nombre": nombre, "trabajo": trabajo})
-    else:
-        print("Ese piso no existe.")
-
-# Mover inquilino a otro piso
-def mover_inquilino(datos, origen, destino, nombre):
-    if origen not in datos or destino not in datos:
-        print("Piso origen o destino no encontrado.")
-        return
-    inquilino = None
-    for i, p in enumerate(datos[origen]["inquilinos"]):
-        if p["nombre"] == nombre:
-            inquilino = datos[origen]["inquilinos"].pop(i)
-            break
-    if inquilino:
-        datos[destino]["inquilinos"].append(inquilino)
-    else:
-        print("Inquilino no encontrado en el piso origen.")
-
-# Eliminar inquilino
-def eliminar_inquilino(datos, id_piso, nombre):
-    piso = datos.get(id_piso)
-    if piso:
-        antes = len(piso["inquilinos"])
-        piso["inquilinos"] = [i for i in piso["inquilinos"] if i["nombre"] != nombre]
-        if len(piso["inquilinos"]) < antes:
-            print("✔️ Inquilino eliminado.")
-        else:
-            print("Inquilino no encontrado.")
-    else:
-        print("Piso no encontrado.")
-
-# Crear nuevo piso
-def crear_piso(datos, id_piso, ciudad, calle, numero):
-    if id_piso in datos:
-        print("Ese ID de piso ya existe.")
-    else:
-        datos[id_piso] = {
-            "ciudad": ciudad,
-            "calle": calle,
-            "numero": numero,
-            "inquilinos": []
+    def to_dict(self):
+        return {
+            "nombre": self.nombre,
+            "profesion": self.profesion
         }
-        print("✔️ Piso creado correctamente.")
 
-# Menú interactivo
-def menu():
-    datos = cargar_datos()
+# 🏠 Clase Vivienda
+class Vivienda:
+    def __init__(self, localidad: str, calle: str, numero: int, codigo: str):
+        self.localidad = localidad
+        self.calle = calle
+        self.numero = numero
+        self.codigo = codigo
+        self.residentes: List[Residente] = []
 
-    while True:
-        print("\n--- MENÚ DE GESTIÓN DE PISOS ---")
-        print("1. Ver todos los pisos")
-        print("2. Ver inquilinos de un piso")
-        print("3. Crear nuevo piso")
-        print("4. Añadir inquilino a un piso")
-        print("5. Mover inquilino a otro piso")
-        print("6. Eliminar inquilino")
-        print("0. Salir")
+    def agregar_residente(self, residente: Residente):
+        self.residentes.append(residente)
 
-        opcion = input("Elige una opción: ")
+    def quitar_residente(self, nombre: str):
+        self.residentes = [r for r in self.residentes if r.nombre != nombre]
 
-        if opcion == "1":
-            ver_pisos(datos)
-        elif opcion == "2":
-            id_piso = input("ID del piso: ")
-            ver_inquilinos(datos, id_piso)
-        elif opcion == "3":
-            id_piso = input("Nuevo ID de piso: ")
-            ciudad = input("Ciudad: ")
-            calle = input("Calle: ")
-            numero = input("Número: ")
-            crear_piso(datos, id_piso, ciudad, calle, numero)
-        elif opcion == "4":
-            id_piso = input("ID del piso: ")
-            nombre = input("Nombre del inquilino: ")
-            trabajo = input("Trabajo: ")
-            añadir_inquilino(datos, id_piso, nombre, trabajo)
-        elif opcion == "5":
-            origen = input("ID del piso actual: ")
-            destino = input("ID del nuevo piso: ")
-            nombre = input("Nombre del inquilino: ")
-            mover_inquilino(datos, origen, destino, nombre)
-        elif opcion == "6":
-            id_piso = input("ID del piso: ")
-            nombre = input("Nombre del inquilino: ")
-            eliminar_inquilino(datos, id_piso, nombre)
-        elif opcion == "0":
-            guardar_datos(datos)
-            print("👋 ¡Hasta luego!")
-            break
-        else:
-            print("❗ Opción no válida.")
+    def mover_residente(self, nombre: str, otra_vivienda):
+        for r in self.residentes:
+            if r.nombre == nombre:
+                otra_vivienda.agregar_residente(r)
+                self.quitar_residente(nombre)
+                break
 
-# Ejecutar menú
+    def to_dict(self):
+        return {
+            "codigo": self.codigo,
+            "localidad": self.localidad,
+            "calle": self.calle,
+            "numero": self.numero,
+            "residentes": [r.to_dict() for r in self.residentes]
+        }
+
+# 🔁 Guardar y cargar desde archivo
+def guardar_viviendas(viviendas: List[Vivienda], archivo="viviendas.json"):
+    with open(archivo, "w", encoding="utf-8") as f:
+        json.dump([v.to_dict() for v in viviendas], f, indent=4, ensure_ascii=False)
+
+def cargar_viviendas(archivo="viviendas.json") -> List[Vivienda]:
+    try:
+        with open(archivo, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            viviendas = []
+            for v in data:
+                vivienda = Vivienda(v["localidad"], v["calle"], v["numero"], v["codigo"])
+                for r in v.get("residentes", []):
+                    vivienda.agregar_residente(Residente(r["nombre"], r["profesion"]))
+                viviendas.append(vivienda)
+            return viviendas
+    except FileNotFoundError:
+        return []
+
+# 🚀 Demo rápida
 if __name__ == "__main__":
-    menu()
+    # Crear viviendas
+    v1 = Vivienda("Valencia", "Sol Naciente", 101, "A1")
+    v2 = Vivienda("Sevilla", "Calle Luna", 204, "B3")
+
+    # Añadir residentes
+    v1.agregar_residente(Residente("Sofía", "Arquitecta"))
+    v1.agregar_residente(Residente("Mario", "Panadero"))
+
+    v2.agregar_residente(Residente("Lucía", "Enfermera"))
+
+    # Simular traslado
+    v1.mover_residente("Mario", v2)
+
+    # Guardar
+    guardar_viviendas([v1, v2])
+
+    # Ver resultado
+    viviendas = cargar_viviendas()
+    for v in viviendas:
+        print(f"🏡 Vivienda en {v.localidad}, {v.calle} {v.numero}")
+        for r in v.residentes:
+            print(f"   👤 {r.nombre} - {r.profesion}")

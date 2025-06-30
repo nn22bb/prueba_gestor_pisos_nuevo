@@ -1,7 +1,7 @@
 import json
 from typing import List
 
-# 🧍 Clase Persona
+# 👤 Clase Residente
 class Residente:
     def __init__(self, nombre: str, profesion: str):
         self.nombre = nombre
@@ -13,7 +13,7 @@ class Residente:
             "profesion": self.profesion
         }
 
-# 🏠 Clase Vivienda
+# 🏡 Clase Vivienda
 class Vivienda:
     def __init__(self, localidad: str, calle: str, numero: int, codigo: str):
         self.localidad = localidad
@@ -44,15 +44,17 @@ class Vivienda:
             "residentes": [r.to_dict() for r in self.residentes]
         }
 
-# 🔁 Guardar y cargar desde archivo
+# 💾 Guardar viviendas en archivo
 def guardar_viviendas(viviendas: List[Vivienda], archivo="viviendas.json"):
     with open(archivo, "w", encoding="utf-8") as f:
         json.dump([v.to_dict() for v in viviendas], f, indent=4, ensure_ascii=False)
 
+# 🔁 Cargar viviendas usando json.loads
 def cargar_viviendas(archivo="viviendas.json") -> List[Vivienda]:
     try:
         with open(archivo, "r", encoding="utf-8") as f:
-            data = json.load(f)
+            texto = f.read()                  # Leer texto completo
+            data = json.loads(texto)          # Cargar como objeto Python
             viviendas = []
             for v in data:
                 vivienda = Vivienda(v["localidad"], v["calle"], v["numero"], v["codigo"])
@@ -63,27 +65,25 @@ def cargar_viviendas(archivo="viviendas.json") -> List[Vivienda]:
     except FileNotFoundError:
         return []
 
-# 🚀 Demo rápida
+# 🚀 Prueba rápida
 if __name__ == "__main__":
-    # Crear viviendas
-    v1 = Vivienda("Valencia", "Sol Naciente", 101, "A1")
-    v2 = Vivienda("Sevilla", "Calle Luna", 204, "B3")
+    # Crear viviendas y residentes
+    v1 = Vivienda("Bilbao", "Av. del Norte", 10, "A10")
+    v2 = Vivienda("Toledo", "Calle Vieja", 45, "B22")
 
-    # Añadir residentes
-    v1.agregar_residente(Residente("Sofía", "Arquitecta"))
-    v1.agregar_residente(Residente("Mario", "Panadero"))
+    v1.agregar_residente(Residente("Nuria", "Diseñadora"))
+    v2.agregar_residente(Residente("Carlos", "Electricista"))
+    v2.agregar_residente(Residente("Eva", "Administrativa"))
 
-    v2.agregar_residente(Residente("Lucía", "Enfermera"))
+    # Trasladar a Eva desde v2 → v1
+    v2.mover_residente("Eva", v1)
 
-    # Simular traslado
-    v1.mover_residente("Mario", v2)
-
-    # Guardar
+    # Guardar en archivo
     guardar_viviendas([v1, v2])
 
-    # Ver resultado
+    # Leer desde archivo y mostrar
     viviendas = cargar_viviendas()
     for v in viviendas:
-        print(f"🏡 Vivienda en {v.localidad}, {v.calle} {v.numero}")
+        print(f"\n🏠 {v.codigo} - {v.localidad}, {v.calle} {v.numero}")
         for r in v.residentes:
             print(f"   👤 {r.nombre} - {r.profesion}")

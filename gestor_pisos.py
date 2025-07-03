@@ -1,7 +1,7 @@
 import json
 from typing import List
 
-# 👤 Clase Residente
+# Clase Residente
 class Residente:
     def __init__(self, nombre: str, profesion: str):
         self.nombre = nombre
@@ -13,7 +13,7 @@ class Residente:
             "profesion": self.profesion
         }
 
-# 🏡 Clase Vivienda
+# Clase Vivienda
 class Vivienda:
     def __init__(self, localidad: str, calle: str, numero: int, codigo: str):
         self.localidad = localidad
@@ -44,12 +44,12 @@ class Vivienda:
             "residentes": [r.to_dict() for r in self.residentes]
         }
 
-# 💾 Guardar viviendas en archivo
+# Guardar viviendas en archivo
 def guardar_viviendas(viviendas: List[Vivienda], archivo="viviendas.json"):
     with open(archivo, "w", encoding="utf-8") as f:
         json.dump([v.to_dict() for v in viviendas], f, indent=4, ensure_ascii=False)
 
-# 🔁 Cargar viviendas usando json.loads
+# Cargar viviendas usando json.loads
 def cargar_viviendas(archivo="viviendas.json") -> List[Vivienda]:
     try:
         with open(archivo, "r", encoding="utf-8") as f:
@@ -65,7 +65,7 @@ def cargar_viviendas(archivo="viviendas.json") -> List[Vivienda]:
     except FileNotFoundError:
         return []
 
-# 🚀 Prueba rápida
+# Prueba rápida
 if __name__ == "__main__":
     # Crear viviendas y residentes
     v1 = Vivienda("Bilbao", "Av. del Norte", 10, "A10")
